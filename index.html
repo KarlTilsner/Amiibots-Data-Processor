@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Amiibots Match Scraper</title>
+
+    <link rel="stylesheet" href="CSS/styles.css">
+
+    <script src="JS/scraper.js"></script>
+    <script src="JS/processor.js"></script>
+    
+  </head>
+
+<!-- First 100 matches: Sun, 19 Jan 2020 06:56:15 GMT -->
+<!-- Last date since data collection: Tue, 19 Mar 2024 08:49:57 GMT -->
+
+  <body> 
+
+    <main>
+
+        <div><p id="pages">Page 0 of 0</p></div>
+        <div><p id="foundMatches">Found matches = 0</p></div>
+        <div><p id="corruptMatches">Corrupt matches = 0</p></div>
+
+        <!-- <button onclick="">Do everything from scratch</button> -->
+        <button onclick="fetchMatches('Tue, 19 Mar 2024 08:49:57 GMT');">Collect all matches</button><!-- enter the date you wish to start collecting from -->
+        <button onclick="processData();">Process json/data.json</button>
+
+        <p>Read README.md for instructions</p>
+
+    </main>
+
+  </body>
+</html>
