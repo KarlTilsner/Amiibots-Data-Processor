@@ -1,5 +1,5 @@
-function scrapeFromBeginning(cursor) {
-    console.log("scraping from scratch");
+async function continueScraping() {
+    console.log("scraping from existing data");
 
     // singles_matches winner_info
     let winner_character_id = [];
@@ -30,14 +30,15 @@ function scrapeFromBeginning(cursor) {
     let corruptMatches = 0;
 
 
+    let existingData = [];
+
+
     // remember data about last scrape
     let future_scrape = {cursor : [], created_at: [], page: 0};
 
     //update this to start from the beginning and work to the present.
 
-    fetchMatches(cursor);
-
-    async function fetchMatches(prev) {
+    async function continueFetchMatches(prev) {
         try {
         let prevEncoded = encodeURIComponent(prev);
         if (prev) {future_scrape.cursor.push(prev);}
@@ -96,7 +97,7 @@ function scrapeFromBeginning(cursor) {
         document.getElementById('corruptMatches').innerText = `Corrupt matches = ${corruptMatches}`;
 
         // Constantly loop until all matches have been found
-        fetchMatches(singles_matche_query_response.pagination.cursor.previous);
+        continueFetchMatches(singles_matche_query_response.pagination.cursor.previous);
         // Uncomment this (and comment out the line above) to loop once and download the json
         // createJSON();
 
@@ -109,9 +110,8 @@ function scrapeFromBeginning(cursor) {
 
     async function createJSON() {
         // create an array of data
-        const data = [];
         for (let i = 0; i < created_at.length; i++) {
-            data.push({ 
+            existingData.push({ 
                 winner_character_id: winner_character_id[i], 
                 winner_unique_amiibo_id: winner_unique_amiibo_id[i],
                 winner_name: winner_name[i], 
@@ -136,10 +136,10 @@ function scrapeFromBeginning(cursor) {
         }
 
         // Sorting the data by the created_at field in descending order
-        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        existingData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         // Store data and the info for continuing the scrape
-        const to_download = {data: data, continue_scrape: future_scrape};
+        const to_download = {data: existingData, continue_scrape: future_scrape};
 
         const json = JSON.stringify(to_download, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -151,4 +151,21 @@ function scrapeFromBeginning(cursor) {
         link.click();
         URL.revokeObjectURL(url);
     }
+
+
+
+    async function getExistingData() {
+        const query = await fetch('./json/data.json');
+        const response = await query.json();
+
+        pageNumber = response.continue_scrape.page;
+
+        console.log(response.continue_scrape.cursor[response.continue_scrape.cursor.length - 1]);
+        continueFetchMatches(response.continue_scrape.cursor[response.continue_scrape.cursor.length - 1]);
+
+        existingData = response.data;
+    }
+    getExistingData();
 }
+
+// make sure to not scrape matches from before the last amiibo scraped. Or go through and remove duplicate matches.

@@ -7,7 +7,7 @@ async function get_all_matches() {
     const url = `./json/data.json`;
     const query = await fetch(url);
     const response = await query.json();
-    response.map(index => all_matches.push(index));
+    response.data.map(index => all_matches.push(index));
     console.log("JSON Loaded:", all_matches);
 }
 
@@ -317,8 +317,12 @@ async function processHighestRatingHistory() {
 // Activate functions here
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 async function processData() {
+    console.log("Getting matches");
     await get_all_matches();
+    console.log("Getting all characters");
     await get_all_characters();
+    console.log("Processing matchup data");
     await processMatchupData();                // Generates matchups for each character
+    console.log("Processing rating history");
     await processHighestRatingHistory();       // Generates each characters rating history
 }
