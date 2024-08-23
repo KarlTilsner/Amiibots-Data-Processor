@@ -98,40 +98,45 @@ async function processHighestRatingHistory() {
     async function get_each_week() {
         const data = [];
         let weeklyMatches = [];
-        let prevDate = 0;
-        let currDate = 0;
+        let prevDate = null;
+        let currDate = null;
         let totalWeeks = 0;
         let totalMatches = 0;
-        
-        // const query = await fetch(`./json/data.json`);
-        // const response = await query.json();
     
+        if (all_matches.length === 0) return data; // Handle empty data
+    
+        // Initialize prevDate with the first match's date
         prevDate = new Date(all_matches[0].created_at).toISOString().substring(0, 10);
     
         await all_matches.reduce(async (previousPromise, index) => {
             await previousPromise;
     
             currDate = new Date(index.created_at).toISOString().substring(0, 10);
-    
             let temp = new Date(currDate);
-            let currDate7DaysAgo = new Date(temp.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            let currDate7DaysAgo = new Date(temp.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // Adjusted to go 7 days back
     
-            if (currDate7DaysAgo === prevDate) {
+            if (currDate !== prevDate && currDate7DaysAgo < prevDate) { 
+                // Push data for the current week
                 await pushData();
             }
+            
             weeklyMatches.push(index);
             totalMatches++;
+            prevDate = currDate; // Update prevDate after processing the current item
+    
         }, Promise.resolve());
     
-        await pushData();            
-
+        // Push remaining data after finishing the loop
+        if (weeklyMatches.length > 0) {
+            await pushData();
+        }
+    
         async function pushData() {
             totalWeeks++;
-            prevDate = currDate;
             // console.log(weeklyMatches);
             data.push(weeklyMatches);
             weeklyMatches = [];
-            await delay(10); // Introduce a delay of 1 second
+            await delay(10); // Optional delay
         }
         
         function delay(ms) {
@@ -140,8 +145,9 @@ async function processHighestRatingHistory() {
     
         return data;
     }
-
+    
     const combinedAmiibotsMatchData = await get_each_week();
+    
 
     // HIGHEST RATING HISTORY CODE
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
